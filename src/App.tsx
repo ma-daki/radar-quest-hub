@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SavedProvider } from "@/hooks/use-saved";
+import { ThemeProvider } from "@/hooks/use-theme";
 import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
 import SavedPage from "./pages/SavedPage";
