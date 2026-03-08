@@ -1,9 +1,10 @@
 import { Opportunity, OpportunityCategory } from "@/lib/types";
-import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, ArrowRight } from "lucide-react";
 import { useSaved } from "@/hooks/use-saved";
 import { generateICSFile } from "@/lib/calendar";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import UrgencyBadge from "./UrgencyBadge";
 
 /** Category color mapping using design tokens */
 const categoryStyles: Record<OpportunityCategory, string> = {
