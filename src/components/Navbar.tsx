@@ -49,14 +49,25 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 rounded-md hover:bg-secondary"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleTheme}
+            className="rounded-md p-2 transition-colors hover:bg-secondary"
+            aria-label="Toggle dark mode"
+          >
+            {resolved === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+
+          {/* Mobile toggle */}
+          <button
+            className="md:hidden p-2 rounded-md hover:bg-secondary"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

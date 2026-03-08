@@ -20,15 +20,17 @@ export default function Index() {
   };
 
   const filtered = useMemo(() => {
-    return opportunities.filter((opp) => {
-      const matchesCategory = selectedCategories.size === 0 || selectedCategories.has(opp.category);
-      const matchesSearch =
-        searchQuery === "" ||
-        opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        opp.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        opp.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
+    return opportunities
+      .filter((opp) => {
+        const matchesCategory = selectedCategories.size === 0 || selectedCategories.has(opp.category);
+        const matchesSearch =
+          searchQuery === "" ||
+          opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          opp.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          opp.description.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+      })
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
   }, [selectedCategories, searchQuery]);
 
   return (
