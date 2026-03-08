@@ -9,6 +9,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { savedIds } = useSaved();
+  const { resolved, setTheme } = useTheme();
+
+  const toggleTheme = () => setTheme(resolved === "dark" ? "light" : "dark");
 
   const links = [
     { to: "/", label: "Discover" },
