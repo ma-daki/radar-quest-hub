@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { Radar, Bookmark, Menu, X } from "lucide-react";
+import { Radar, Bookmark, Menu, X, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useSaved } from "@/hooks/use-saved";
+import { useTheme } from "@/hooks/use-theme";
 
 /** Top navigation bar for the platform */
 export default function Navbar() {
