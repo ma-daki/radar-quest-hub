@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { OpportunityCategory } from "@/lib/types";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import OpportunityCard from "@/components/OpportunityCard";
@@ -17,12 +17,36 @@ import {
 
 const PAGE_SIZE = 12;
 
+const HERO_IMAGES = [
+  "/hero-images/student1.jpg",
+  "/hero-images/student2.jpg",
+  "/hero-images/student3.jpg",
+  "/hero-images/student4.jpg",
+];
+
 /** Home/Feed page — discover opportunities */
 export default function Index() {
   const [selectedCategories, setSelectedCategories] = useState<Set<OpportunityCategory>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeImg, setActiveImg] = useState(0);
   const { data: opportunities = [], isLoading } = useOpportunities();
+
+  // Preload hero images
+  useEffect(() => {
+    HERO_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
+  // Rotate every 7 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveImg((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleToggle = (category: OpportunityCategory) => {
     setSelectedCategories((prev) => {
