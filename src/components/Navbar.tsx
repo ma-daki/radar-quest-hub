@@ -1,13 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
-import { Radar, Bookmark, Menu, X } from "lucide-react";
+import { Radar, Bookmark, Menu, X, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { useSaved } from "@/hooks/use-saved";
+import { useTheme } from "@/hooks/use-theme";
 
 /** Top navigation bar for the platform */
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { savedIds } = useSaved();
+  const { resolved, setTheme } = useTheme();
+
+  const toggleTheme = () => setTheme(resolved === "dark" ? "light" : "dark");
 
   const links = [
     { to: "/", label: "Discover" },
@@ -45,14 +49,25 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 rounded-md hover:bg-secondary"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleTheme}
+            className="rounded-md p-2 transition-colors hover:bg-secondary"
+            aria-label="Toggle dark mode"
+          >
+            {resolved === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+
+          {/* Mobile toggle */}
+          <button
+            className="md:hidden p-2 rounded-md hover:bg-secondary"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}

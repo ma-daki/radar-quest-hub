@@ -1,9 +1,10 @@
 import { Opportunity, OpportunityCategory } from "@/lib/types";
-import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, ArrowRight } from "lucide-react";
 import { useSaved } from "@/hooks/use-saved";
 import { generateICSFile } from "@/lib/calendar";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import UrgencyBadge from "./UrgencyBadge";
 
 /** Category color mapping using design tokens */
 const categoryStyles: Record<OpportunityCategory, string> = {
@@ -85,10 +86,7 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
           <MapPin className="h-3.5 w-3.5" />
           {opportunity.location}
         </span>
-        <span className={`inline-flex items-center gap-1 ${daysLeft <= 7 ? "text-destructive font-medium" : ""}`}>
-          <Clock className="h-3.5 w-3.5" />
-          {daysLeft > 0 ? `${daysLeft} days left` : "Deadline passed"}
-        </span>
+        <UrgencyBadge deadline={opportunity.deadline} />
         {opportunity.amount && (
           <span className="font-medium text-primary">{opportunity.amount}</span>
         )}
