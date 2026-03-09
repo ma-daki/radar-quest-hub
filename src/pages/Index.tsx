@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { OpportunityCategory } from "@/lib/types";
+import { useState, useMemo, useEffect } from "react";
+import { OpportunityCategory, ScholarshipLevel, FundingType } from "@/lib/types";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import OpportunityCard from "@/components/OpportunityCard";
 import FilterBar from "@/components/FilterBar";
 import EmailSubscribe from "@/components/EmailSubscribe";
-import { Radar, Loader2 } from "lucide-react";
+import { Radar, Loader2, GraduationCap } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -27,6 +27,8 @@ const HERO_IMAGES = [
 /** Home/Feed page — discover opportunities */
 export default function Index() {
   const [selectedCategories, setSelectedCategories] = useState<Set<OpportunityCategory>>(new Set());
+  const [selectedLevels, setSelectedLevels] = useState<Set<ScholarshipLevel>>(new Set());
+  const [selectedFunding, setSelectedFunding] = useState<FundingType | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -58,6 +60,21 @@ export default function Index() {
     setCurrentPage(1);
   };
 
+  const handleToggleLevel = (level: ScholarshipLevel) => {
+    setSelectedLevels((prev) => {
+      const next = new Set(prev);
+      if (next.has(level)) next.delete(level);
+      else next.add(level);
+      return next;
+    });
+    setCurrentPage(1);
+  };
+
+  const handleFundingChange = (funding: FundingType | null) => {
+    setSelectedFunding(funding);
+    setCurrentPage(1);
+  };
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
@@ -72,10 +89,22 @@ export default function Index() {
           opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           opp.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
           opp.description.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
+        const matchesLevel =
+          selectedLevels.size === 0 || (opp.level && selectedLevels.has(opp.level));
+        const matchesFunding =
+          !selectedFunding || opp.funding === selectedFunding;
+        return matchesCategory && matchesSearch && matchesLevel && matchesFunding;
       })
       .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
-  }, [selectedCategories, searchQuery, opportunities]);
+  }, [selectedCategories, selectedLevels, selectedFunding, searchQuery, opportunities]);
+
+  // Study Abroad highlights
+  const studyAbroadOpps = useMemo(() => {
+    return opportunities
+      .filter((o) => o.category === "University Scholarship" && o.funding === "Fully funded")
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+      .slice(0, 4);
+  }, [opportunities]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedItems = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -100,7 +129,6 @@ export default function Index() {
     <div className="min-h-screen">
       {/* Hero section */}
       <section className="relative overflow-hidden px-4 py-16 text-center sm:py-24">
-        {/* Rotating background images with Ken Burns effect */}
         {HERO_IMAGES.map((src, i) => (
           <div
             key={src}
@@ -114,7 +142,6 @@ export default function Index() {
             }}
           />
         ))}
-        {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-black/60" />
 
         <div className="container relative z-10 max-w-3xl">
@@ -129,12 +156,29 @@ export default function Index() {
             Scholarships, hackathons, internships, fellowships, and more — curated for young people ages 13–30.
           </p>
 
-          {/* Email subscription */}
           <div className="mx-auto mt-8 max-w-md">
             <EmailSubscribe />
           </div>
         </div>
       </section>
+
+      {/* Study Abroad Highlights */}
+      {studyAbroadOpps.length > 0 && (
+        <section className="container py-8">
+          <div className="flex items-center gap-2 mb-4">
+            <GraduationCap className="h-5 w-5 text-accent" />
+            <h2 className="font-display text-xl font-bold">Study Abroad Opportunities</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Top fully funded university scholarships from around the world
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {studyAbroadOpps.map((opp, i) => (
+              <OpportunityCard key={opp.id} opportunity={opp} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Feed section */}
       <section className="container py-8">
@@ -143,6 +187,10 @@ export default function Index() {
           onToggle={handleToggle}
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
+          selectedLevels={selectedLevels}
+          onToggleLevel={handleToggleLevel}
+          selectedFunding={selectedFunding}
+          onFundingChange={handleFundingChange}
         />
 
         <p className="mt-6 mb-4 text-sm text-muted-foreground">
