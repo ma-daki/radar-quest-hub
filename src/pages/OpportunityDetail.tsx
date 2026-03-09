@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { opportunities } from "@/lib/opportunities";
+import { useOpportunities } from "@/hooks/use-opportunities";
 import { useSaved } from "@/hooks/use-saved";
 import { generateICSFile } from "@/lib/calendar";
 import { toast } from "sonner";
@@ -12,13 +12,23 @@ import {
   ExternalLink,
   MapPin,
   Users,
+  Loader2,
 } from "lucide-react";
 
 /** Opportunity detail page with full info */
 export default function OpportunityDetail() {
   const { id } = useParams<{ id: string }>();
   const { isSaved, toggleSave } = useSaved();
+  const { data: opportunities = [], isLoading } = useOpportunities();
   const opp = opportunities.find((o) => o.id === id);
+
+  if (isLoading) {
+    return (
+      <div className="container flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!opp) {
     return (
