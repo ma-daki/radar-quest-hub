@@ -25,4 +25,6 @@ export interface Opportunity {
   amount?: string;
   level?: ScholarshipLevel;
   funding?: FundingType;
+  country?: string;  // primary country/region
+  source?: string;   // data source attribution
 }

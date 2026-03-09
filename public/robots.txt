@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://opportunity-rader.vercel.app/sitemap.xml

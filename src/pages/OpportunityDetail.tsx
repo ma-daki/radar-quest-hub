@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import { useSaved } from "@/hooks/use-saved";
 import { generateICSFile } from "@/lib/calendar";
@@ -16,7 +17,9 @@ import {
   Loader2,
 } from "lucide-react";
 
-/** Opportunity detail page with full info */
+const BASE_URL = "https://opportunity-rader.vercel.app";
+
+/** Opportunity detail page with full info and per-page SEO */
 export default function OpportunityDetail() {
   const { id } = useParams<{ id: string }>();
   const { isSaved, toggleSave } = useSaved();
@@ -33,12 +36,17 @@ export default function OpportunityDetail() {
 
   if (!opp) {
     return (
-      <div className="container flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-lg text-muted-foreground">Opportunity not found.</p>
-        <Link to="/" className="mt-4 text-primary hover:underline">
-          ← Back to feed
-        </Link>
-      </div>
+      <>
+        <Helmet>
+          <title>Opportunity Not Found – Opportunity Radar</title>
+        </Helmet>
+        <div className="container flex flex-col items-center justify-center py-24 text-center">
+          <p className="text-lg text-muted-foreground">Opportunity not found.</p>
+          <Link to="/" className="mt-4 text-primary hover:underline">
+            ← Back to feed
+          </Link>
+        </div>
+      </>
     );
   }
 
@@ -47,140 +55,184 @@ export default function OpportunityDetail() {
     (new Date(opp.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
   const isUniScholarship = opp.category === "University Scholarship";
+  const pageUrl = `${BASE_URL}/opportunity/${opp.id}`;
+  const metaDescription = `${opp.organization} — ${opp.category}. Deadline: ${new Date(opp.deadline).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}. ${opp.description.slice(0, 120)}…`;
+
+  // JSON-LD structured data
+  const isEvent = opp.category === "Hackathon" || opp.category === "Competition";
+  const jsonLd = isEvent
+    ? {
+      "@context": "https://schema.org",
+      "@type": "Event",
+      name: opp.title,
+      description: opp.description,
+      organizer: { "@type": "Organization", name: opp.organization },
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: opp.location.toLowerCase().includes("virtual") || opp.location.toLowerCase().includes("remote")
+        ? "https://schema.org/OnlineEventAttendanceMode"
+        : "https://schema.org/OfflineEventAttendanceMode",
+      location: { "@type": "Place", name: opp.location },
+      endDate: opp.deadline,
+      url: opp.applyLink,
+    }
+    : {
+      "@context": "https://schema.org",
+      "@type": "EducationalOccupationalCredential",
+      name: opp.title,
+      description: opp.description,
+      url: opp.applyLink,
+      recognizedBy: { "@type": "Organization", name: opp.organization },
+      educationalLevel: opp.level ?? opp.category,
+    };
 
   return (
-    <div className="container max-w-3xl py-8">
-      <Link
-        to="/"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to feed
-      </Link>
+    <>
+      <Helmet>
+        <title>{`${opp.title} – ${opp.organization} | Opportunity Radar`}</title>
+        <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={pageUrl} />
+        <meta property="og:title" content={`${opp.title} – ${opp.organization}`} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:image" content={`${BASE_URL}/preview.png`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${opp.title} – ${opp.organization}`} />
+        <meta name="twitter:description" content={metaDescription} />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
 
-      <article className="rounded-lg border bg-card p-6 card-shadow sm:p-8">
-        {/* Category + actions */}
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${
-              isUniScholarship ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
-            }`}>
-              {isUniScholarship && <GraduationCap className="h-3.5 w-3.5" />}
-              {opp.category}
-            </span>
-            {opp.level && (
-              <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-                {opp.level}
+      <div className="container max-w-3xl py-8">
+        <Link
+          to="/"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to feed
+        </Link>
+
+        <article className="rounded-lg border bg-card p-6 card-shadow sm:p-8">
+          {/* Category + actions */}
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${isUniScholarship ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
+                }`}>
+                {isUniScholarship && <GraduationCap className="h-3.5 w-3.5" />}
+                {opp.category}
               </span>
-            )}
-            {opp.funding && (
-              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                opp.funding === "Fully funded"
-                  ? "bg-success/10 text-success"
-                  : "bg-warning/10 text-warning"
-              }`}>
-                {opp.funding}
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                toggleSave(opp.id);
-                toast(saved ? "Removed" : "Saved!");
-              }}
-              className="rounded-md border p-2 transition-colors hover:bg-secondary"
-            >
-              {saved ? (
-                <BookmarkCheck className="h-4 w-4 text-primary" />
-              ) : (
-                <Bookmark className="h-4 w-4 text-muted-foreground" />
+              {opp.level && (
+                <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                  {opp.level}
+                </span>
               )}
-            </button>
+              {opp.funding && (
+                <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${opp.funding === "Fully funded"
+                    ? "bg-success/10 text-success"
+                    : "bg-warning/10 text-warning"
+                  }`}>
+                  {opp.funding}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  toggleSave(opp.id);
+                  toast(saved ? "Removed" : "Saved!");
+                }}
+                className="rounded-md border p-2 transition-colors hover:bg-secondary"
+              >
+                {saved ? (
+                  <BookmarkCheck className="h-4 w-4 text-primary" />
+                ) : (
+                  <Bookmark className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  generateICSFile(opp.title, opp.deadline);
+                  toast("Calendar event downloaded!");
+                }}
+                className="rounded-md border p-2 transition-colors hover:bg-secondary"
+              >
+                <CalendarPlus className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">{opp.title}</h1>
+          <p className="mt-1 text-muted-foreground">{opp.organization}</p>
+
+          {/* Meta */}
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <div className="flex items-center gap-2 rounded-md bg-secondary p-3">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Deadline</p>
+                <p className="text-sm font-medium">
+                  {new Date(opp.deadline).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                  <span className={`ml-1 text-xs ${daysLeft <= 7 ? "text-destructive" : "text-muted-foreground"}`}>
+                    ({daysLeft > 0 ? `${daysLeft}d left` : "Passed"})
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-md bg-secondary p-3">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Location</p>
+                <p className="text-sm font-medium">{opp.location}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-md bg-secondary p-3">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Eligibility</p>
+                <p className="text-sm font-medium">{opp.eligibility}</p>
+              </div>
+            </div>
+          </div>
+
+          {opp.amount && (
+            <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 p-4">
+              <p className="text-sm text-muted-foreground">Award / Cost</p>
+              <p className="text-lg font-semibold text-primary">{opp.amount}</p>
+            </div>
+          )}
+
+          {/* Description */}
+          <div className="mt-6">
+            <h2 className="font-display text-lg font-semibold mb-2">About this opportunity</h2>
+            <p className="text-foreground/80 leading-relaxed">{opp.description}</p>
+          </div>
+
+          {/* Apply CTA */}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a
+              href={opp.applyLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Apply Now <ExternalLink className="h-4 w-4" />
+            </a>
             <button
               onClick={() => {
                 generateICSFile(opp.title, opp.deadline);
                 toast("Calendar event downloaded!");
               }}
-              className="rounded-md border p-2 transition-colors hover:bg-secondary"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition-colors hover:bg-secondary"
             >
-              <CalendarPlus className="h-4 w-4 text-muted-foreground" />
+              <CalendarPlus className="h-4 w-4" />
+              Add Deadline to Calendar
             </button>
           </div>
-        </div>
-
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">{opp.title}</h1>
-        <p className="mt-1 text-muted-foreground">{opp.organization}</p>
-
-        {/* Meta */}
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-2 rounded-md bg-secondary p-3">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Deadline</p>
-              <p className="text-sm font-medium">
-                {new Date(opp.deadline).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-                <span className={`ml-1 text-xs ${daysLeft <= 7 ? "text-destructive" : "text-muted-foreground"}`}>
-                  ({daysLeft > 0 ? `${daysLeft}d left` : "Passed"})
-                </span>
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-md bg-secondary p-3">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Location</p>
-              <p className="text-sm font-medium">{opp.location}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 rounded-md bg-secondary p-3">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Eligibility</p>
-              <p className="text-sm font-medium">{opp.eligibility}</p>
-            </div>
-          </div>
-        </div>
-
-        {opp.amount && (
-          <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 p-4">
-            <p className="text-sm text-muted-foreground">Award / Cost</p>
-            <p className="text-lg font-semibold text-primary">{opp.amount}</p>
-          </div>
-        )}
-
-        {/* Description */}
-        <div className="mt-6">
-          <h2 className="font-display text-lg font-semibold mb-2">About this opportunity</h2>
-          <p className="text-foreground/80 leading-relaxed">{opp.description}</p>
-        </div>
-
-        {/* Apply CTA */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a
-            href={opp.applyLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Apply Now <ExternalLink className="h-4 w-4" />
-          </a>
-          <button
-            onClick={() => {
-              generateICSFile(opp.title, opp.deadline);
-              toast("Calendar event downloaded!");
-            }}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition-colors hover:bg-secondary"
-          >
-            <CalendarPlus className="h-4 w-4" />
-            Add Deadline to Calendar
-          </button>
-        </div>
-      </article>
-    </div>
+        </article>
+      </div>
+    </>
   );
 }

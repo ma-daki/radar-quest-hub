@@ -15,7 +15,7 @@ import {
   PaginationEllipsis,
 } from "@/components/ui/pagination";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 const HERO_IMAGES = [
   "/hero-images/student1.jpg",
@@ -30,6 +30,7 @@ export default function Index() {
   const [selectedLevels, setSelectedLevels] = useState<Set<ScholarshipLevel>>(new Set());
   const [selectedFunding, setSelectedFunding] = useState<FundingType | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const { data: opportunities = [], isLoading } = useOpportunities();
@@ -49,6 +50,13 @@ export default function Index() {
     }, 7000);
     return () => clearInterval(timer);
   }, []);
+
+  // Unique sorted country list from dataset
+  const countries = useMemo(() => {
+    const set = new Set<string>();
+    opportunities.forEach((o) => { if (o.country) set.add(o.country); });
+    return Array.from(set).sort();
+  }, [opportunities]);
 
   const handleToggle = (category: OpportunityCategory) => {
     setSelectedCategories((prev) => {
@@ -80,6 +88,11 @@ export default function Index() {
     setCurrentPage(1);
   };
 
+  const handleCountryChange = (country: string) => {
+    setSelectedCountry(country);
+    setCurrentPage(1);
+  };
+
   const filtered = useMemo(() => {
     return opportunities
       .filter((opp) => {
@@ -93,10 +106,12 @@ export default function Index() {
           selectedLevels.size === 0 || (opp.level && selectedLevels.has(opp.level));
         const matchesFunding =
           !selectedFunding || opp.funding === selectedFunding;
-        return matchesCategory && matchesSearch && matchesLevel && matchesFunding;
+        const matchesCountry =
+          !selectedCountry || opp.country === selectedCountry;
+        return matchesCategory && matchesSearch && matchesLevel && matchesFunding && matchesCountry;
       })
       .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
-  }, [selectedCategories, selectedLevels, selectedFunding, searchQuery, opportunities]);
+  }, [selectedCategories, selectedLevels, selectedFunding, searchQuery, selectedCountry, opportunities]);
 
   // Study Abroad highlights
   const studyAbroadOpps = useMemo(() => {
@@ -191,6 +206,9 @@ export default function Index() {
           onToggleLevel={handleToggleLevel}
           selectedFunding={selectedFunding}
           onFundingChange={handleFundingChange}
+          selectedCountry={selectedCountry}
+          onCountryChange={handleCountryChange}
+          countries={countries}
         />
 
         <p className="mt-6 mb-4 text-sm text-muted-foreground">
