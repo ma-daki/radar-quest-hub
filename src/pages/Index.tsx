@@ -1,14 +1,16 @@
 import { useState, useMemo } from "react";
-import { opportunities } from "@/lib/opportunities";
 import { OpportunityCategory } from "@/lib/types";
+import { useOpportunities } from "@/hooks/use-opportunities";
 import OpportunityCard from "@/components/OpportunityCard";
 import FilterBar from "@/components/FilterBar";
-import { Radar } from "lucide-react";
+import EmailSubscribe from "@/components/EmailSubscribe";
+import { Radar, Loader2 } from "lucide-react";
 
 /** Home/Feed page — discover opportunities */
 export default function Index() {
   const [selectedCategories, setSelectedCategories] = useState<Set<OpportunityCategory>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: opportunities = [], isLoading } = useOpportunities();
 
   const handleToggle = (category: OpportunityCategory) => {
     setSelectedCategories((prev) => {
@@ -31,7 +33,7 @@ export default function Index() {
         return matchesCategory && matchesSearch;
       })
       .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
-  }, [selectedCategories, searchQuery]);
+  }, [selectedCategories, searchQuery, opportunities]);
 
   return (
     <div className="min-h-screen">
@@ -48,6 +50,11 @@ export default function Index() {
           <p className="mt-4 text-lg text-primary-foreground/70">
             Scholarships, hackathons, internships, fellowships, and more — curated for young people ages 13–30.
           </p>
+
+          {/* Email subscription */}
+          <div className="mx-auto mt-8 max-w-md">
+            <EmailSubscribe />
+          </div>
         </div>
       </section>
 
@@ -61,10 +68,14 @@ export default function Index() {
         />
 
         <p className="mt-6 mb-4 text-sm text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "opportunity" : "opportunities"} found
+          {isLoading ? "Loading…" : `${filtered.length} ${filtered.length === 1 ? "opportunity" : "opportunities"} found`}
         </p>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-16">
             <p className="text-muted-foreground">No opportunities match your filters.</p>
           </div>

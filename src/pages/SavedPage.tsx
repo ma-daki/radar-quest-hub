@@ -1,12 +1,13 @@
-import { opportunities } from "@/lib/opportunities";
+import { useOpportunities } from "@/hooks/use-opportunities";
 import { useSaved } from "@/hooks/use-saved";
 import OpportunityCard from "@/components/OpportunityCard";
-import { Bookmark } from "lucide-react";
+import { Bookmark, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 /** Saved Opportunities page */
 export default function SavedPage() {
   const { savedIds } = useSaved();
+  const { data: opportunities = [], isLoading } = useOpportunities();
   const saved = opportunities.filter((o) => savedIds.has(o.id));
 
   return (
@@ -21,7 +22,11 @@ export default function SavedPage() {
         </p>
       </div>
 
-      {saved.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : saved.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-20 text-center">
           <Bookmark className="mb-4 h-12 w-12 text-muted-foreground/40" />
           <p className="text-lg font-medium text-muted-foreground">No saved opportunities yet</p>
