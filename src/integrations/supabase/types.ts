@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      email_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      opportunities: {
+        Row: {
+          amount: string | null
+          apply_link: string
+          category: string
+          created_at: string
+          deadline: string
+          description: string
+          eligibility: string
+          id: string
+          location: string
+          organization: string
+          source: string | null
+          title: string
+        }
+        Insert: {
+          amount?: string | null
+          apply_link: string
+          category: string
+          created_at?: string
+          deadline: string
+          description?: string
+          eligibility?: string
+          id?: string
+          location?: string
+          organization?: string
+          source?: string | null
+          title: string
+        }
+        Update: {
+          amount?: string | null
+          apply_link?: string
+          category?: string
+          created_at?: string
+          deadline?: string
+          description?: string
+          eligibility?: string
+          id?: string
+          location?: string
+          organization?: string
+          source?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
