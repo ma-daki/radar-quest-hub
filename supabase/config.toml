@@ -1,1 +1,8 @@
 project_id = "ygckkrcmbwaswxxyjqds"
+
+[functions.scrape-opportunities]
+verify_jwt = false
+
+# Run scraper daily at 6am UTC
+[functions.scrape-opportunities.schedule]
+cron = "0 6 * * *"
