@@ -6,7 +6,11 @@ export type OpportunityCategory =
   | "Internship"
   | "Fellowship"
   | "Bootcamp"
-  | "Competition";
+  | "Competition"
+  | "University Scholarship";
+
+export type ScholarshipLevel = "Diploma" | "Bachelor" | "Master" | "PhD";
+export type FundingType = "Fully funded" | "Partial";
 
 export interface Opportunity {
   id: string;
@@ -18,5 +22,7 @@ export interface Opportunity {
   applyLink: string;
   organization: string;
   eligibility: string;
-  amount?: string; // for scholarships/fellowships
+  amount?: string;
+  level?: ScholarshipLevel;
+  funding?: FundingType;
 }

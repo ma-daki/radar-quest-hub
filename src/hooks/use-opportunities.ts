@@ -8,7 +8,6 @@ export function useOpportunities() {
   return useQuery({
     queryKey: ["opportunities"],
     queryFn: async (): Promise<Opportunity[]> => {
-      // Fetch from database
       const { data, error } = await supabase
         .from("opportunities" as any)
         .select("*")
@@ -26,6 +25,8 @@ export function useOpportunities() {
         organization: row.organization,
         eligibility: row.eligibility,
         amount: row.amount,
+        level: row.level || undefined,
+        funding: row.funding || undefined,
       }));
 
       // Merge: static + DB, deduplicate by title
