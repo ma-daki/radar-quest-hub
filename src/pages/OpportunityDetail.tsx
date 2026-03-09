@@ -10,6 +10,7 @@ import {
   CalendarPlus,
   Clock,
   ExternalLink,
+  GraduationCap,
   MapPin,
   Users,
   Loader2,
@@ -45,6 +46,7 @@ export default function OpportunityDetail() {
   const daysLeft = Math.ceil(
     (new Date(opp.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
   );
+  const isUniScholarship = opp.category === "University Scholarship";
 
   return (
     <div className="container max-w-3xl py-8">
@@ -59,9 +61,28 @@ export default function OpportunityDetail() {
       <article className="rounded-lg border bg-card p-6 card-shadow sm:p-8">
         {/* Category + actions */}
         <div className="flex items-start justify-between gap-4 mb-4">
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-            {opp.category}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${
+              isUniScholarship ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
+            }`}>
+              {isUniScholarship && <GraduationCap className="h-3.5 w-3.5" />}
+              {opp.category}
+            </span>
+            {opp.level && (
+              <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                {opp.level}
+              </span>
+            )}
+            {opp.funding && (
+              <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                opp.funding === "Fully funded"
+                  ? "bg-success/10 text-success"
+                  : "bg-warning/10 text-warning"
+              }`}>
+                {opp.funding}
+              </span>
+            )}
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => {

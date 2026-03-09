@@ -41,7 +41,9 @@ export type Database = {
           deadline: string
           description: string
           eligibility: string
+          funding: string | null
           id: string
+          level: string | null
           location: string
           organization: string
           source: string | null
@@ -55,7 +57,9 @@ export type Database = {
           deadline: string
           description?: string
           eligibility?: string
+          funding?: string | null
           id?: string
+          level?: string | null
           location?: string
           organization?: string
           source?: string | null
@@ -69,7 +73,9 @@ export type Database = {
           deadline?: string
           description?: string
           eligibility?: string
+          funding?: string | null
           id?: string
+          level?: string | null
           location?: string
           organization?: string
           source?: string | null

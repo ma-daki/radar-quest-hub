@@ -1,5 +1,5 @@
 import { Opportunity, OpportunityCategory } from "@/lib/types";
-import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, ArrowRight } from "lucide-react";
+import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, ArrowRight, GraduationCap } from "lucide-react";
 import { useSaved } from "@/hooks/use-saved";
 import { generateICSFile } from "@/lib/calendar";
 import { Link } from "react-router-dom";
@@ -9,6 +9,7 @@ import UrgencyBadge from "./UrgencyBadge";
 /** Category color mapping using design tokens */
 const categoryStyles: Record<OpportunityCategory, string> = {
   Scholarship: "bg-primary/10 text-primary",
+  "University Scholarship": "bg-accent/10 text-accent",
   Hackathon: "bg-accent/10 text-accent",
   Internship: "bg-success/10 text-success",
   Fellowship: "bg-warning/10 text-warning",
@@ -46,6 +47,8 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
     });
   };
 
+  const isUniScholarship = opportunity.category === "University Scholarship";
+
   return (
     <div
       className="group relative flex flex-col rounded-lg border bg-card p-5 card-shadow transition-all duration-300 hover:card-shadow-hover hover:-translate-y-0.5 animate-fade-in"
@@ -53,9 +56,26 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
     >
       {/* Top: category badge + save button */}
       <div className="flex items-start justify-between gap-3 mb-3">
-        <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryStyles[opportunity.category]}`}>
-          {opportunity.category}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryStyles[opportunity.category]}`}>
+            {isUniScholarship && <GraduationCap className="h-3 w-3" />}
+            {opportunity.category}
+          </span>
+          {opportunity.level && (
+            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+              {opportunity.level}
+            </span>
+          )}
+          {opportunity.funding && (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              opportunity.funding === "Fully funded"
+                ? "bg-success/10 text-success"
+                : "bg-warning/10 text-warning"
+            }`}>
+              {opportunity.funding}
+            </span>
+          )}
+        </div>
         <button
           onClick={handleSave}
           className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-secondary"
