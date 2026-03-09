@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { OpportunityCategory } from "@/lib/types";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import OpportunityCard from "@/components/OpportunityCard";
@@ -17,12 +17,36 @@ import {
 
 const PAGE_SIZE = 12;
 
+const HERO_IMAGES = [
+  "/hero-images/student1.jpg",
+  "/hero-images/student2.jpg",
+  "/hero-images/student3.jpg",
+  "/hero-images/student4.jpg",
+];
+
 /** Home/Feed page — discover opportunities */
 export default function Index() {
   const [selectedCategories, setSelectedCategories] = useState<Set<OpportunityCategory>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeImg, setActiveImg] = useState(0);
   const { data: opportunities = [], isLoading } = useOpportunities();
+
+  // Preload hero images
+  useEffect(() => {
+    HERO_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
+  // Rotate every 7 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveImg((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleToggle = (category: OpportunityCategory) => {
     setSelectedCategories((prev) => {
@@ -75,16 +99,33 @@ export default function Index() {
   return (
     <div className="min-h-screen">
       {/* Hero section */}
-      <section className="hero-gradient px-4 py-16 text-center sm:py-24">
-        <div className="container max-w-3xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+      <section className="relative overflow-hidden px-4 py-16 text-center sm:py-24">
+        {/* Rotating background images with Ken Burns effect */}
+        {HERO_IMAGES.map((src, i) => (
+          <div
+            key={src}
+            className="absolute inset-0 transition-opacity duration-[1500ms] ease-in-out"
+            style={{
+              opacity: i === activeImg ? 1 : 0,
+              backgroundImage: `url(${src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              animation: i === activeImg ? "kenburns 7s ease-in-out forwards" : "none",
+            }}
+          />
+        ))}
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/60" />
+
+        <div className="container relative z-10 max-w-3xl">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
             <Radar className="h-4 w-4" />
             Discover your next opportunity
           </div>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
+          <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
             Opportunity Radar
           </h1>
-          <p className="mt-4 text-lg text-primary-foreground/70">
+          <p className="mt-4 text-lg text-white/80">
             Scholarships, hackathons, internships, fellowships, and more — curated for young people ages 13–30.
           </p>
 
