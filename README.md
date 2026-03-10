@@ -1,116 +1,144 @@
-Opportunity Radar
+# Opportunity Radar
 
-A platform that helps students and young people discover global opportunities such as scholarships, hackathons, internships, fellowships, and bootcamps in one place. Opportunity Radar aggregates opportunities from across the web and organizes them so users can easily find and apply before deadlines.
+> Discover global scholarships, hackathons, internships, fellowships, and bootcamps — all in one place.
 
-The Problem
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-opportunity--rader.vercel.app-blue?style=flat-square&logo=vercel)](https://opportunity-rader.vercel.app/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Built with React](https://img.shields.io/badge/Built%20with-React-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-Students often struggle to find opportunities because they are scattered across multiple websites, university pages, newsletters, and social media platforms.
+---
 
-This creates several problems:
+## Overview
 
-Opportunities are difficult to track
+Students and young people miss out on life-changing opportunities every day — not because they don't exist, but because they're buried across dozens of websites, newsletters, university portals, and social media feeds.
 
-Deadlines are easily missed
+**Opportunity Radar** solves this by aggregating and centralizing opportunities into one searchable, deadline-aware platform so students can discover and act before it's too late.
 
-Students must search many platforms to find relevant programs
+---
 
-Many valuable opportunities go unnoticed
+## The Problem
 
-Opportunity Radar solves this by centralizing opportunities into one searchable platform where users can quickly discover and track them.
+| Challenge | Impact |
+|---|---|
+| Opportunities scattered across the web | Hard to track and easily overlooked |
+| No centralized deadline tracking | Students miss application windows |
+| Requires searching many platforms | Time-consuming and inefficient |
+| Valuable programs go unnoticed | Lost career and education potential |
 
-Features
-Opportunity Discovery
+---
 
-Browse opportunities such as scholarships, internships, hackathons, fellowships, and bootcamps.
+## Features
 
-Deadline Sorting
+### Opportunity Discovery
+Browse a curated feed of global opportunities across five categories: **Scholarships**, **Internships**, **Hackathons**, **Fellowships**, and **Bootcamps**.
 
-Opportunities can be sorted by deadline urgency, helping users quickly identify programs closing soon.
+### Deadline Sorting
+Sort opportunities by urgency so you always know what's closing soon and never miss a deadline.
 
-Email Alerts
+### Email Alerts
+Subscribe with your email to get notified when new opportunities matching your interests are added.
 
-Users can subscribe with their email to receive notifications when new opportunities are added.
+### Web Aggregation
+The platform pulls opportunities from multiple online sources, continuously expanding the number of available listings.
 
-Web Aggregation
+### Pagination
+Comfortably browse large listings across multiple pages without being overwhelmed.
 
-The platform gathers opportunities from multiple online sources, expanding the number of available listings.
+### Dark Mode
+Toggle between light and dark themes for a comfortable viewing experience at any time of day.
 
-Pagination
+### Category Filtering
+Filter opportunities by type to quickly surface what's most relevant to you.
 
-Browse multiple pages of opportunities when large numbers of listings are available.
+---
 
-Dark Mode
+## 🛠️ Tech Stack
 
-Toggle between light and dark themes for a better viewing experience.
+| Layer | Technology |
+|---|---|
+| Frontend | React |
+| Build Tool | Vite |
+| Language | TypeScript |
+| UI Components | Tailwind CSS + shadcn/ui |
+| Styling | Tailwind CSS |
+| Data Fetching | APIs & Web Scraping |
+| Hosting | Vercel |
 
-Category Filtering
+---
 
-Filter opportunities based on type (Scholarships, Hackathons, Internships, Fellowships, Bootcamps).
+## Project Structure
 
-Tech Stack
-Layer	Technology
-Frontend	React
-Build Tool	Vite
-Language	TypeScript
-UI	Tailwind CSS + shadcn/ui
-Hosting	Vercel
-Data Fetching	APIs & Web Scraping
-Styling	Tailwind CSS
-Project Structure
+```
 src/
+├── components/
+│   ├── opportunity-card.tsx
+│   ├── navbar.tsx
+│   ├── filters.tsx
+│   └── pagination.tsx
+├── pages/
+│   ├── home.tsx
+│   └── explore.tsx
+├── hooks/
+│   └── use-opportunities.ts
+└── lib/
+    └── utils.ts
+```
 
-components/
-  opportunity-card.tsx
-  navbar.tsx
-  filters.tsx
-  pagination.tsx
+---
 
-pages/
-  home.tsx
-  explore.tsx
+## Getting Started
 
-hooks/
-  use-opportunities.ts
+### Prerequisites
 
-lib/
-  utils.ts
-Getting Started
-Prerequisites
+- Node.js 18+
+- npm
 
-Node.js 18+
+### Installation
 
-npm
-
-Install
+```bash
+git clone https://github.com/your-username/opportunity-radar.git
+cd opportunity-radar
 npm install
-Development
+```
+
+### Development
+
+```bash
 npm run dev
+```
 
-Runs the development server locally.
+Starts the local development server at `http://localhost:5173`.
 
-Build
+### Build
+
+```bash
 npm run build
-Deployment
+```
 
-The project is deployed using Vercel.
+Generates an optimized production build in the `dist/` folder.
 
-Live project:
-https://opportunity-rader.vercel.app/
+---
 
-Impact
+## Deployment
 
-Opportunity Radar makes it easier for young people to access global opportunities by:
+Opportunity Radar is deployed on **Vercel**.
 
-Reducing the time needed to find programs
+🔗 **Live:** [https://opportunity-rader.vercel.app/](https://opportunity-rader.vercel.app/)
 
-Preventing students from missing deadlines
+To deploy your own instance, connect the repository to [Vercel](https://vercel.com/) and it will auto-deploy on every push to `main`.
 
-Increasing awareness of scholarships and learning programs
+---
 
-Helping students discover career-building opportunities worldwide
+## Impact
 
-The goal is to democratize access to opportunities for students everywhere.
+Opportunity Radar is built to democratize access to global opportunities for young people everywhere by:
 
-License
+- Reducing the time it takes to find relevant programs
+- Preventing students from missing application deadlines
+- Increasing awareness of scholarships and learning programs
+- Helping students discover career-building opportunities worldwide
 
-MIT License
+---
+
+## MIT.
