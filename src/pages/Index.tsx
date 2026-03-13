@@ -2,9 +2,10 @@ import { useState, useMemo, useEffect } from "react";
 import { OpportunityCategory, ScholarshipLevel, FundingType } from "@/lib/types";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import OpportunityCard from "@/components/OpportunityCard";
+import OpportunityCardSkeleton from "@/components/OpportunityCardSkeleton";
 import FilterBar from "@/components/FilterBar";
 import EmailSubscribe from "@/components/EmailSubscribe";
-import { Radar, Loader2, GraduationCap } from "lucide-react";
+import { Radar, GraduationCap } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
