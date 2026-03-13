@@ -6,9 +6,38 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// --- Rate Limiting (in-memory, per-isolate) ---
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return { allowed: true };
+  }
+  if (entry.count >= RATE_LIMIT) {
+    return { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  entry.count++;
+  return { allowed: true };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limit check
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("cf-connecting-ip") || "unknown";
+  const rl = checkRateLimit(ip);
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ success: false, error: "Too many requests" }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rl.retryAfter) } }
+    );
   }
 
   try {
@@ -16,7 +45,6 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Get all subscribers
     const { data: subscribers, error: subError } = await supabase
       .from("email_subscribers")
       .select("email");
@@ -28,7 +56,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get opportunities with deadlines approaching (within 7 days) or recently added (last 24h)
     const now = new Date();
     const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -49,7 +76,6 @@ Deno.serve(async (req) => {
       .limit(10);
 
     const allOpps = [...(newOpps || []), ...(urgentOpps || [])];
-    // Deduplicate by id
     const uniqueOpps = Array.from(new Map(allOpps.map((o) => [o.id, o])).values());
 
     if (uniqueOpps.length === 0) {
@@ -59,7 +85,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build email content
     const opportunityList = uniqueOpps
       .map(
         (opp) =>
@@ -70,14 +95,9 @@ Deno.serve(async (req) => {
     const emailSubject = `🚀 Opportunity Radar Alert — ${uniqueOpps.length} opportunities for you!`;
     const emailBody = `Hi there!\n\nHere are the latest opportunities on your radar:\n\n${opportunityList}\n\nDon't miss out — apply before the deadlines!\n\n— Opportunity Radar`;
 
-    // Log the alert (actual email sending would require an email service)
     console.log(`Alert prepared for ${subscribers.length} subscribers:`);
     console.log(`Subject: ${emailSubject}`);
     console.log(`Opportunities: ${uniqueOpps.length}`);
-
-    // For now, store the alert log. In production, integrate with an email service.
-    // The email content is ready — when an email provider is connected, 
-    // replace this with actual send calls.
 
     return new Response(
       JSON.stringify({

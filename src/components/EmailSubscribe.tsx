@@ -14,7 +14,11 @@ export default function EmailSubscribe() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    const sanitizedEmail = stripHtml(email).trim().toLowerCase();
+    if (!sanitizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
 
     setLoading(true);
     const { error } = await supabase

@@ -6,7 +6,52 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Curated list of opportunity sources to search
+// --- Rate Limiting (in-memory, per-isolate) ---
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 30;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return { allowed: true };
+  }
+  if (entry.count >= RATE_LIMIT) {
+    return { allowed: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  entry.count++;
+  return { allowed: true };
+}
+
+// --- Zod-like validation (no import needed) ---
+function validateOpportunity(opp: any): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (typeof opp.title !== "string" || opp.title.trim().length < 3) errors.push("title must be at least 3 chars");
+  if (typeof opp.title === "string" && opp.title.length > 300) errors.push("title too long");
+  if (typeof opp.deadline !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(opp.deadline)) errors.push("deadline must be YYYY-MM-DD");
+  if (opp.deadline && new Date(opp.deadline) < new Date()) errors.push("deadline must be in the future");
+  if (typeof opp.apply_link !== "string" || !opp.apply_link.startsWith("https://")) errors.push("apply_link must be a valid https URL");
+  if (typeof opp.description === "string" && opp.description.length > 2000) errors.push("description too long");
+  return { valid: errors.length === 0, errors };
+}
+
+function stripHtml(str: string): string {
+  return typeof str === "string" ? str.replace(/<[^>]*>/g, "").trim() : "";
+}
+
+function sanitizeOpp(opp: any) {
+  return {
+    ...opp,
+    title: stripHtml(opp.title || ""),
+    description: stripHtml(opp.description || ""),
+    organization: stripHtml(opp.organization || ""),
+    eligibility: stripHtml(opp.eligibility || ""),
+  };
+}
+
+// --- Search queries ---
 const SEARCH_QUERIES = [
   "scholarship for students 2026 apply deadline",
   "hackathon 2026 registration open",
@@ -14,7 +59,6 @@ const SEARCH_QUERIES = [
   "fellowship young people 2026 application",
   "coding bootcamp free 2026",
   "tech competition students 2026 prizes",
-  // University scholarship specific queries
   "DAAD scholarship 2026 application deadline",
   "Chevening scholarship 2026 apply",
   "Erasmus Mundus joint master 2026 scholarship",
@@ -26,62 +70,37 @@ const SEARCH_QUERIES = [
   "government scholarship study abroad 2026",
 ];
 
-// Keywords for category detection
 function detectCategory(text: string): string {
   const lower = text.toLowerCase();
-  // University scholarship detection (more specific, check first)
   if (
     (lower.includes("university") || lower.includes("master") || lower.includes("phd") ||
      lower.includes("bachelor") || lower.includes("diploma") || lower.includes("postgraduate") ||
      lower.includes("undergraduate") || lower.includes("tuition") || lower.includes("study abroad")) &&
     (lower.includes("scholarship") || lower.includes("funded") || lower.includes("grant") || lower.includes("bursary"))
-  )
-    return "University Scholarship";
-  if (lower.includes("scholarship") || lower.includes("financial aid"))
-    return "Scholarship";
-  if (lower.includes("hackathon") || lower.includes("hack"))
-    return "Hackathon";
-  if (lower.includes("internship") || lower.includes("intern"))
-    return "Internship";
-  if (lower.includes("fellowship") || lower.includes("fellow"))
-    return "Fellowship";
-  if (lower.includes("bootcamp") || lower.includes("boot camp") || lower.includes("coding program"))
-    return "Bootcamp";
-  if (lower.includes("competition") || lower.includes("challenge") || lower.includes("contest"))
-    return "Competition";
-  return "Scholarship"; // default
+  ) return "University Scholarship";
+  if (lower.includes("scholarship") || lower.includes("financial aid")) return "Scholarship";
+  if (lower.includes("hackathon") || lower.includes("hack")) return "Hackathon";
+  if (lower.includes("internship") || lower.includes("intern")) return "Internship";
+  if (lower.includes("fellowship") || lower.includes("fellow")) return "Fellowship";
+  if (lower.includes("bootcamp") || lower.includes("boot camp") || lower.includes("coding program")) return "Bootcamp";
+  if (lower.includes("competition") || lower.includes("challenge") || lower.includes("contest")) return "Competition";
+  return "Scholarship";
 }
 
-// Detect scholarship level
 function detectLevel(text: string): string | null {
   const lower = text.toLowerCase();
-  if (lower.includes("phd") || lower.includes("doctorate") || lower.includes("doctoral")) return "PhD";
+  if (lower.includes("phd") || lower.includes("doctorate")) return "PhD";
   if (lower.includes("master") || lower.includes("postgraduate") || lower.includes("msc") || lower.includes("mba")) return "Master";
   if (lower.includes("bachelor") || lower.includes("undergraduate") || lower.includes("bsc")) return "Bachelor";
   if (lower.includes("diploma") || lower.includes("certificate program")) return "Diploma";
   return null;
 }
 
-// Detect funding type
 function detectFunding(text: string): string | null {
   const lower = text.toLowerCase();
-  if (lower.includes("fully funded") || lower.includes("full scholarship") || lower.includes("full tuition") || lower.includes("full funding")) return "Fully funded";
+  if (lower.includes("fully funded") || lower.includes("full scholarship") || lower.includes("full tuition")) return "Fully funded";
   if (lower.includes("partial") || lower.includes("merit-based") || lower.includes("need-based")) return "Partial";
   return null;
-}
-
-// Validate opportunity data
-function isValid(opp: { title: string; deadline: string; apply_link: string }): boolean {
-  const keywords = ["hackathon", "scholarship", "internship", "fellowship", "bootcamp", "competition", "program", "challenge", "grant", "funded", "bursary", "award"];
-  const hasKeyword = keywords.some((kw) => opp.title.toLowerCase().includes(kw));
-  if (!hasKeyword) return false;
-
-  const deadline = new Date(opp.deadline);
-  if (isNaN(deadline.getTime()) || deadline < new Date()) return false;
-
-  if (!opp.apply_link || !opp.apply_link.startsWith("http")) return false;
-
-  return true;
 }
 
 Deno.serve(async (req) => {
@@ -89,11 +108,20 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limit check
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("cf-connecting-ip") || "unknown";
+  const rl = checkRateLimit(ip);
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ success: false, error: "Too many requests" }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rl.retryAfter) } }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
 
     if (!lovableApiKey) {
@@ -148,15 +176,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Validate and deduplicate
+    // Sanitize, validate, and deduplicate
     const validOpps = allOpportunities
-      .filter((opp) => isValid(opp))
+      .map(sanitizeOpp)
+      .filter((opp) => {
+        const { valid, errors } = validateOpportunity(opp);
+        if (!valid) console.warn("Invalid opportunity skipped:", opp.title, errors);
+        return valid;
+      })
       .map((opp) => {
         const combinedText = `${opp.title} ${opp.description} ${opp.eligibility || ""}`;
-        const category = opp.category === "University Scholarship"
-          ? "University Scholarship"
-          : detectCategory(combinedText);
-
+        const category = opp.category === "University Scholarship" ? "University Scholarship" : detectCategory(combinedText);
         return {
           title: opp.title,
           category,
@@ -173,7 +203,6 @@ Deno.serve(async (req) => {
         };
       });
 
-    // Upsert
     let inserted = 0;
     for (const opp of validOpps) {
       const { error } = await supabase.from("opportunities").upsert(opp, {
@@ -198,12 +227,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        found: allOpportunities.length,
-        valid: validOpps.length,
-        inserted,
-      }),
+      JSON.stringify({ success: true, found: allOpportunities.length, valid: validOpps.length, inserted }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
