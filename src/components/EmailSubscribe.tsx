@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { stripHtml } from "@/lib/sanitize";
 
 export default function EmailSubscribe() {
   const [email, setEmail] = useState("");
