@@ -6,6 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="/favicon.png" />
 
+  <!-- Security Headers via Meta Tags -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.supabase.in; frame-ancestors 'none';" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
+  <!--
+    CSP Limitations via meta tags:
+    - frame-ancestors in meta CSP is ignored by browsers (only works via HTTP header)
+    - report-uri / report-to directives are not supported in meta tags
+    - For full X-Frame-Options: DENY enforcement, use server-side headers (e.g. vercel.json or edge middleware)
+  -->
+
+  <!-- Preconnect hints for external APIs -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://ygckkrcmbwaswxxyjqds.supabase.co" />
+
   <title>Opportunity Radar – Scholarships, Hackathons, Internships & Global Opportunities</title>
 
   <meta name="description"
