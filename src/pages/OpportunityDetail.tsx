@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import { useSaved } from "@/hooks/use-saved";
-import { generateICSFile } from "@/lib/calendar";
+import AddToCalendarButton from "@/components/AddToCalendarButton";
 import { toast } from "sonner";
 import {
   ArrowLeft,
