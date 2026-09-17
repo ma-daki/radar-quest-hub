@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useOpportunities } from "@/hooks/use-opportunities";
 import { useSaved } from "@/hooks/use-saved";
-import { generateICSFile } from "@/lib/calendar";
+import AddToCalendarButton from "@/components/AddToCalendarButton";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -148,15 +148,7 @@ export default function OpportunityDetail() {
                   <Bookmark className="h-4 w-4 text-muted-foreground" />
                 )}
               </button>
-              <button
-                onClick={() => {
-                  generateICSFile(opp.title, opp.deadline);
-                  toast("Calendar event downloaded!");
-                }}
-                className="rounded-md border p-2 transition-colors hover:bg-secondary"
-              >
-                <CalendarPlus className="h-4 w-4 text-muted-foreground" />
-              </button>
+              <AddToCalendarButton opportunity={opp} variant="icon" />
             </div>
           </div>
 
@@ -220,16 +212,11 @@ export default function OpportunityDetail() {
             >
               Apply Now <ExternalLink className="h-4 w-4" />
             </a>
-            <button
-              onClick={() => {
-                generateICSFile(opp.title, opp.deadline);
-                toast("Calendar event downloaded!");
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition-colors hover:bg-secondary"
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Add Deadline to Calendar
-            </button>
+            <AddToCalendarButton
+              opportunity={opp}
+              label="Add Deadline to Calendar"
+              className="justify-center rounded-lg px-6 py-3 !text-sm"
+            />
           </div>
         </article>
       </div>

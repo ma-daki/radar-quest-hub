@@ -1,10 +1,10 @@
 import { Opportunity, OpportunityCategory } from "@/lib/types";
-import { Bookmark, BookmarkCheck, CalendarPlus, MapPin, ArrowRight, GraduationCap } from "lucide-react";
+import { Bookmark, BookmarkCheck, MapPin, ArrowRight, GraduationCap } from "lucide-react";
 import { useSaved } from "@/hooks/use-saved";
-import { generateICSFile } from "@/lib/calendar";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import UrgencyBadge from "./UrgencyBadge";
+import AddToCalendarButton from "./AddToCalendarButton";
 
 /** Category color mapping using design tokens */
 const categoryStyles: Record<OpportunityCategory, string> = {
@@ -39,13 +39,6 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
     });
   };
 
-  const handleCalendar = (e: React.MouseEvent) => {
-    e.preventDefault();
-    generateICSFile(opportunity.title, opportunity.deadline);
-    toast("Calendar event downloaded!", {
-      description: `Reminder set for 3 days before deadline`,
-    });
-  };
 
   const isUniScholarship = opportunity.category === "University Scholarship";
 
@@ -114,13 +107,7 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
 
       {/* Actions */}
       <div className="mt-auto flex items-center gap-2">
-        <button
-          onClick={handleCalendar}
-          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary"
-        >
-          <CalendarPlus className="h-3.5 w-3.5" />
-          Add to Calendar
-        </button>
+        <AddToCalendarButton opportunity={opportunity} />
         <Link
           to={`/opportunity/${opportunity.id}`}
           className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:underline"
