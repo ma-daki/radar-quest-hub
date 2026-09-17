@@ -39,13 +39,6 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
     });
   };
 
-  const handleCalendar = (e: React.MouseEvent) => {
-    e.preventDefault();
-    generateICSFile(opportunity.title, opportunity.deadline);
-    toast("Calendar event downloaded!", {
-      description: `Reminder set for 3 days before deadline`,
-    });
-  };
 
   const isUniScholarship = opportunity.category === "University Scholarship";
 
