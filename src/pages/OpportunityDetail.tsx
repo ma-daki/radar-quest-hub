@@ -148,15 +148,7 @@ export default function OpportunityDetail() {
                   <Bookmark className="h-4 w-4 text-muted-foreground" />
                 )}
               </button>
-              <button
-                onClick={() => {
-                  generateICSFile(opp.title, opp.deadline);
-                  toast("Calendar event downloaded!");
-                }}
-                className="rounded-md border p-2 transition-colors hover:bg-secondary"
-              >
-                <CalendarPlus className="h-4 w-4 text-muted-foreground" />
-              </button>
+              <AddToCalendarButton opportunity={opp} variant="icon" />
             </div>
           </div>
 
