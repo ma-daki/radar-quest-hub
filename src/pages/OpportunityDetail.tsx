@@ -212,16 +212,11 @@ export default function OpportunityDetail() {
             >
               Apply Now <ExternalLink className="h-4 w-4" />
             </a>
-            <button
-              onClick={() => {
-                generateICSFile(opp.title, opp.deadline);
-                toast("Calendar event downloaded!");
-              }}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition-colors hover:bg-secondary"
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Add Deadline to Calendar
-            </button>
+            <AddToCalendarButton
+              opportunity={opp}
+              label="Add Deadline to Calendar"
+              className="justify-center rounded-lg px-6 py-3 !text-sm"
+            />
           </div>
         </article>
       </div>
