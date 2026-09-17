@@ -107,13 +107,7 @@ export default function OpportunityCard({ opportunity, index = 0 }: Props) {
 
       {/* Actions */}
       <div className="mt-auto flex items-center gap-2">
-        <button
-          onClick={handleCalendar}
-          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-secondary"
-        >
-          <CalendarPlus className="h-3.5 w-3.5" />
-          Add to Calendar
-        </button>
+        <AddToCalendarButton opportunity={opportunity} />
         <Link
           to={`/opportunity/${opportunity.id}`}
           className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:underline"
