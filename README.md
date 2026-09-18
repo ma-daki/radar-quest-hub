@@ -3,7 +3,6 @@
 > Discover global scholarships, hackathons, internships, fellowships, and bootcamps — all in one place.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-opportunity--rader.vercel.app-blue?style=flat-square&logo=vercel)](https://opportunity-rader.vercel.app/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Built with React](https://img.shields.io/badge/Built%20with-React-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
